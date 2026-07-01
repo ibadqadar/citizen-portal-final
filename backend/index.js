@@ -1,6 +1,10 @@
 const express = require('express');
 const cors = require('cors');
 const path = require('path');
+
+// Load environment variables from the root .env file
+require('dotenv').config({ path: path.join(__dirname, '../.env') });
+
 const { initDB } = require('./db');
 
 const authRoutes = require('./routes/auth');
@@ -29,8 +33,12 @@ if (process.env.NODE_ENV === 'production' && fs.existsSync(distPath)) {
 }
 
 // Initialize database
-initDB().then(() => {
-  console.log("Database initialized successfully.");
+initDB().then((success) => {
+  if (success) {
+    console.log("Database initialized and connected successfully.");
+  } else {
+    console.warn("Database initialization failed/skipped (running in fallback offline mode).");
+  }
 }).catch(err => {
   console.warn("Database initialization skipped. " + err.message);
 });

@@ -62,9 +62,12 @@ const initDB = async () => {
       console.log('Seeded initial services.');
     }
     console.log('Database initialized successfully.');
+    return true;
   } catch (err) {
     console.warn('Error initializing database:', err.message);
-  } finally {
+    return false;
+  }
+  finally {
     if (client) client.release();
   }
 };

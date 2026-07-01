@@ -19,6 +19,7 @@ spec:
         app: frontend
         release: {{ .Release.Name }}
     spec:
+      serviceAccountName: {{ .Release.Name }}-frontend-sa
       containers:
       - name: frontend
         image: "{{ .Values.frontend.image.repository }}:{{ .Values.frontend.image.tag }}"

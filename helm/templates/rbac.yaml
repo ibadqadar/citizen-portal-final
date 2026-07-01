@@ -1,72 +1,76 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ .Release.Name }}-frontend-sa
+  labels:
+    release: {{ .Release.Name }}
 ---
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: frontend-sa
-  namespace: citizen-portal
+  name: {{ .Release.Name }}-backend-sa
+  labels:
+    release: {{ .Release.Name }}
 ---
-apiVersion: v1
-kind: ServiceAccount
-metadata:
-  name: backend-sa
-  namespace: citizen-portal
----
-# Role for developers to read resources in citizen-portal namespace
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: namespace-reader
-  namespace: citizen-portal
+  name: {{ .Release.Name }}-namespace-reader
+  labels:
+    release: {{ .Release.Name }}
 rules:
 - apiGroups: ["", "apps", "autoscaling", "networking.k8s.io"]
   resources: ["pods", "pods/log", "deployments", "services", "ingresses", "endpoints", "horizontalpodautoscalers", "configmaps"]
   verbs: ["get", "list", "watch"]
 ---
-# RoleBinding for developers group
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: developer-namespace-reader-binding
-  namespace: citizen-portal
+  name: {{ .Release.Name }}-developer-reader-binding
+  labels:
+    release: {{ .Release.Name }}
 subjects:
 - kind: Group
-  name: my-company:developers
+  name: "my-company:developers"
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: Role
-  name: namespace-reader
+  name: {{ .Release.Name }}-namespace-reader
   apiGroup: rbac.authorization.k8s.io
 ---
-# ClusterRole for reading global resources like nodes or storage classes
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: cluster-resource-reader
+  name: {{ .Release.Name }}-cluster-resource-reader
+  labels:
+    release: {{ .Release.Name }}
 rules:
 - apiGroups: [""]
   resources: ["nodes", "persistentvolumes", "storageclasses"]
   verbs: ["get", "list", "watch"]
 ---
-# ClusterRoleBinding connecting developers to cluster-resource-reader
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: developer-cluster-reader-binding
+  name: {{ .Release.Name }}-developer-cluster-reader-binding
+  labels:
+    release: {{ .Release.Name }}
 subjects:
 - kind: Group
-  name: my-company:developers
+  name: "my-company:developers"
   apiGroup: rbac.authorization.k8s.io
 roleRef:
   kind: ClusterRole
-  name: cluster-resource-reader
+  name: {{ .Release.Name }}-cluster-resource-reader
   apiGroup: rbac.authorization.k8s.io
 ---
 # Role for backend-sa to read secrets and configmaps (required for backup/scripts operations)
 apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  name: backend-workload-role
-  namespace: citizen-portal
+  name: {{ .Release.Name }}-backend-workload-role
+  labels:
+    release: {{ .Release.Name }}
 rules:
 - apiGroups: [""]
   resources: ["secrets", "configmaps"]
@@ -75,14 +79,14 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: RoleBinding
 metadata:
-  name: backend-workload-binding
-  namespace: citizen-portal
+  name: {{ .Release.Name }}-backend-workload-binding
+  labels:
+    release: {{ .Release.Name }}
 subjects:
 - kind: ServiceAccount
-  name: backend-sa
-  namespace: citizen-portal
+  name: {{ .Release.Name }}-backend-sa
+  namespace: {{ .Release.Namespace }}
 roleRef:
   kind: Role
-  name: backend-workload-role
+  name: {{ .Release.Name }}-backend-workload-role
   apiGroup: rbac.authorization.k8s.io
-

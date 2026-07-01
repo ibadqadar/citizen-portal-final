@@ -1,26 +1,13 @@
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  name: {{ .Release.Name }}-redis-pvc
-  labels:
-    app: redis
-    release: {{ .Release.Name }}
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: {{ .Values.redis.storageSize }}
----
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: {{ .Release.Name }}-redis
   labels:
     app: redis
     release: {{ .Release.Name }}
 spec:
-  replicas: 1
+  serviceName: "{{ .Release.Name }}-redis"
+  replicas: {{ .Values.redis.replicaCount | default 3 }}
   selector:
     matchLabels:
       app: redis
@@ -31,6 +18,18 @@ spec:
         app: redis
         release: {{ .Release.Name }}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - redis
+              topologyKey: kubernetes.io/hostname
       containers:
         - name: redis
           image: "{{ .Values.redis.image.repository }}:{{ .Values.redis.image.tag }}"
@@ -52,15 +51,19 @@ spec:
               command: ["redis-cli", "ping"]
             initialDelaySeconds: 5
             periodSeconds: 5
-      volumes:
-        - name: redisdata
-          persistentVolumeClaim:
-            claimName: {{ .Release.Name }}-redis-pvc
+  volumeClaimTemplates:
+    - metadata:
+        name: redisdata
+      spec:
+        accessModes: [ "ReadWriteOnce" ]
+        resources:
+          requests:
+            storage: {{ .Values.redis.storageSize | quote }}
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: redis
+  name: {{ .Release.Name }}-redis
   labels:
     app: redis
     release: {{ .Release.Name }}

@@ -1,0 +1,36 @@
+apiVersion: batch/v1
+kind: CronJob
+metadata:
+  name: {{ .Release.Name }}-pg-backup
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  schedule: "0 2 * * *" # Daily backups at 2:00 AM
+  successfulJobsHistoryLimit: 3
+  failedJobsHistoryLimit: 1
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          serviceAccountName: {{ .Release.Name }}-backend-sa
+          containers:
+          - name: pg-backup
+            image: postgres:15
+            command: ["/bin/bash", "/scripts/backup.sh"]
+            envFrom:
+              - secretRef:
+                  name: {{ .Release.Name }}-secret
+            volumeMounts:
+              - name: backup-storage
+                mountPath: /backups
+              - name: backup-scripts
+                mountPath: /scripts
+          volumes:
+            - name: backup-storage
+              persistentVolumeClaim:
+                claimName: {{ .Release.Name }}-pg-backup-pvc
+            - name: backup-scripts
+              configMap:
+                name: {{ .Release.Name }}-pg-backup-scripts
+                defaultMode: 0755
+          restartPolicy: OnFailure

@@ -1,13 +1,13 @@
 node_modules/
 build/
 dist/
-coverage/
+cache/
 .DS_Store
 *.log
 .env*
 !.env.example
-terraform/.terraform/
-
 .terraform/
 *.tfstate*
+*.tfstate.backup
 .terraform.lock.hcl
+terraform/.terraform/
