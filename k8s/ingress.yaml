@@ -5,8 +5,8 @@ metadata:
   namespace: citizen-portal
   annotations:
     kubernetes.io/ingress.class: nginx
-    cert-manager.io/cluster-issuer: "letsencrypt-prod"
-    # HTTPS redirection
+    cert-manager.io/cluster-issuer: "local-selfsigned-issuer"
+    # Force HTTPS Redirection
     nginx.ingress.kubernetes.io/ssl-redirect: "true"
     nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
     # Rate limiting
@@ -19,12 +19,13 @@ metadata:
       add_header X-XSS-Protection "1; mode=block" always;
       add_header Strict-Transport-Security "max-age=31536000; includeSubDomains; preload" always;
 spec:
+  ingressClassName: nginx
   tls:
   - hosts:
-    - citizenportal.example.com
+    - citizen.portal
     secretName: citizen-portal-tls-secret
   rules:
-  - host: citizenportal.example.com
+  - host: citizen.portal
     http:
       paths:
       - path: /api

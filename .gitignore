@@ -6,3 +6,8 @@ coverage/
 *.log
 .env*
 !.env.example
+terraform/.terraform/
+
+.terraform/
+*.tfstate*
+.terraform.lock.hcl

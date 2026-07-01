@@ -91,5 +91,5 @@ ingress:
   className: nginx
   host: citizenportal.example.com
   tlsSecretName: citizen-portal-tls-secret
-  clusterIssuer: letsencrypt-prod
+  clusterIssuer: local-selfsigned-issuer
   issuerEmail: ismyworkingemail@gmail.com

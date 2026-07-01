@@ -1,4 +1,4 @@
-{{- if .Values.ingress.enabled -}}
+{{- if and .Values.ingress.enabled (eq .Values.ingress.clusterIssuer "letsencrypt-prod") -}}
 apiVersion: cert-manager.io/v1
 kind: ClusterIssuer
 metadata:
