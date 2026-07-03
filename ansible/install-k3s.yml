@@ -1,12 +1,12 @@
 ---
-- name: Install K3s on Master Node
-  hosts: master
+- name: Initialize K3s Cluster Leader
+  hosts: master[0]
   become: yes
   tasks:
-    - name: Download and install K3s
+    - name: Download and install K3s on leader
       shell: curl -sfL https://get.k3s.io | sh -
       environment:
-        INSTALL_K3S_EXEC: "server --cluster-init"
+        INSTALL_K3S_EXEC: "server --cluster-init --tls-san {{ load_balancer_dns | default('localhost') }}"
       args:
         creates: /etc/rancher/k3s/k3s.yaml
 
@@ -22,7 +22,7 @@
         src: /var/lib/rancher/k3s/server/node-token
       register: k3s_token
       
-    - name: Set token fact
+    - name: Set token fact on host
       set_fact:
         k3s_cluster_token: "{{ k3s_token.content | b64decode | trim }}"
 
@@ -31,3 +31,15 @@
         src: /etc/rancher/k3s/k3s.yaml
         dest: ~/.kube/config
         flat: yes
+
+- name: Join K3s Multi-Master Nodes
+  hosts: master:!master[0]
+  become: yes
+  tasks:
+    - name: Download and join K3s as server
+      shell: curl -sfL https://get.k3s.io | sh -
+      environment:
+        INSTALL_K3S_EXEC: "server --server https://{{ hostvars[groups['master'][0]]['ansible_host'] | default(groups['master'][0]) }}:6443 --tls-san {{ load_balancer_dns | default('localhost') }}"
+        K3S_TOKEN: "{{ hostvars[groups['master'][0]]['k3s_cluster_token'] }}"
+      args:
+        creates: /etc/rancher/k3s/k3s.yaml

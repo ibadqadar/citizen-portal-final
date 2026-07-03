@@ -19,6 +19,18 @@ spec:
         app: frontend
         release: {{ .Release.Name }}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - frontend
+              topologyKey: kubernetes.io/hostname
       serviceAccountName: {{ .Release.Name }}-frontend-sa
       containers:
       - name: frontend

@@ -19,6 +19,18 @@ spec:
         app: backend
         release: {{ .Release.Name }}
     spec:
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 100
+            podAffinityTerm:
+              labelSelector:
+                matchExpressions:
+                - key: app
+                  operator: In
+                  values:
+                  - backend
+              topologyKey: kubernetes.io/hostname
       serviceAccountName: {{ .Release.Name }}-backend-sa
       containers:
       - name: backend

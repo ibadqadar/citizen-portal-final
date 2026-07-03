@@ -1,0 +1,55 @@
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-frontend-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: frontend
+      release: {{ .Release.Name }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-backend-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: backend
+      release: {{ .Release.Name }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-db-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: db
+      release: {{ .Release.Name }}
+---
+apiVersion: policy/v1
+kind: PodDisruptionBudget
+metadata:
+  name: {{ .Release.Name }}-redis-pdb
+  namespace: {{ .Release.Namespace }}
+  labels:
+    release: {{ .Release.Name }}
+spec:
+  minAvailable: 1
+  selector:
+    matchLabels:
+      app: redis
+      release: {{ .Release.Name }}
