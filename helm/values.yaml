@@ -1,95 +1,34 @@
+# Cloud-Native Citizen Portal Helm Configurations
+global:
+  environment: production
+  clusterType: k3s-5node-ha
+
+# Frontend Microservice Configuration
 frontend:
   replicaCount: 2
   image:
     repository: citizen-portal-frontend
-    tag: "latest"
+    tag: latest
     pullPolicy: IfNotPresent
   service:
-    type: NodePort
+    type: ClusterIP
     port: 80
-    targetPort: 8080
-    nodePort: 30001
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "250m"
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 80
 
+# Backend Microservice Configuration
 backend:
   replicaCount: 2
   image:
     repository: citizen-portal-backend
-    tag: "latest"
+    tag: latest
     pullPolicy: IfNotPresent
   service:
     type: ClusterIP
     port: 5000
-    targetPort: 5000
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "250m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  autoscaling:
-    enabled: true
-    minReplicas: 2
-    maxReplicas: 5
-    targetCPUUtilizationPercentage: 80
 
-database:
-  replicaCount: 3
-  image:
-    repository: ghcr.io/cloudnative-pg/postgresql
-    tag: "15.8"
-  resources:
-    requests:
-      memory: "256Mi"
-      cpu: "250m"
-    limits:
-      memory: "512Mi"
-      cpu: "500m"
-  storageSize: 5Gi
-  env:
-    POSTGRES_USER: "postgres"
-    POSTGRES_PASSWORD: "" # Set via `--set database.env.POSTGRES_PASSWORD`
-    POSTGRES_DB: "citizen_portal"
-
-redis:
-  replicaCount: 3
-  image:
-    repository: redis
-    tag: "7-alpine"
-  resources:
-    requests:
-      memory: "128Mi"
-      cpu: "100m"
-    limits:
-      memory: "256Mi"
-      cpu: "250m"
-  storageSize: 2Gi
-
-config:
-  NODE_ENV: "production"
-  PORT: "5000"
-  REDIS_URL: "redis://redis:6379"
-  DATABASE_URL: "" # Set via `--set config.DATABASE_URL`
-  JWT_SECRET: "" # Set via `--set config.JWT_SECRET`
-  ADMIN_EMAIL: "" # Set via `--set config.ADMIN_EMAIL`
-  ADMIN_PASSWORD: "" # Set via `--set config.ADMIN_PASSWORD`
-
-ingress:
+# Horizontal Pod Autoscaler (HPA) Configurations
+autoscaling:
   enabled: true
-  className: nginx
-  host: citizenportal.example.com
-  tlsSecretName: citizen-portal-tls-secret
-  clusterIssuer: local-selfsigned-issuer
-  issuerEmail: ismyworkingemail@gmail.com
+  minReplicas: 2
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
