@@ -14,11 +14,14 @@ export const options = {
 };
 
 export default function () {
-  // Target your frontend or backend API through the Ingress controller
-  // By default, it hits the services API route of your Citizen Portal backend
   const url = 'http://localhost/api/services';
+  const params = {
+    headers: {
+      'Host': 'citizenportal.example.com',
+    },
+  };
   
-  const res = http.get(url);
+  const res = http.get(url, params);
   
   // Verify that the server is responding with a 200 OK status
   check(res, {
